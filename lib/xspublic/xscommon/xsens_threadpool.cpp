@@ -1,66 +1,66 @@
 
-//  Copyright (c) 2003-2020 Xsens Technologies B.V. or subsidiaries worldwide.
+//  Copyright (c) 2003-2021 Xsens Technologies B.V. or subsidiaries worldwide.
 //  All rights reserved.
-//
+//  
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//
+//  
 //  1.	Redistributions of source code must retain the above copyright notice,
 //  	this list of conditions, and the following disclaimer.
-//
+//  
 //  2.	Redistributions in binary form must reproduce the above copyright notice,
 //  	this list of conditions, and the following disclaimer in the documentation
 //  	and/or other materials provided with the distribution.
-//
+//  
 //  3.	Neither the names of the copyright holders nor the names of their contributors
 //  	may be used to endorse or promote products derived from this software without
 //  	specific prior written permission.
-//
+//  
 //  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 //  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 //  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 //  THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//  SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+//  SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
 //  OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 //  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR
 //  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.THE LAWS OF THE NETHERLANDS
-//  SHALL BE EXCLUSIVELY APPLICABLE AND ANY DISPUTES SHALL BE FINALLY SETTLED UNDER THE RULES
-//  OF ARBITRATION OF THE INTERNATIONAL CHAMBER OF COMMERCE IN THE HAGUE BY ONE OR MORE
+//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.THE LAWS OF THE NETHERLANDS 
+//  SHALL BE EXCLUSIVELY APPLICABLE AND ANY DISPUTES SHALL BE FINALLY SETTLED UNDER THE RULES 
+//  OF ARBITRATION OF THE INTERNATIONAL CHAMBER OF COMMERCE IN THE HAGUE BY ONE OR MORE 
 //  ARBITRATORS APPOINTED IN ACCORDANCE WITH SAID RULES.
-//
+//  
 
 
-//  Copyright (c) 2003-2020 Xsens Technologies B.V. or subsidiaries worldwide.
+//  Copyright (c) 2003-2021 Xsens Technologies B.V. or subsidiaries worldwide.
 //  All rights reserved.
-//
+//  
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//
+//  
 //  1.	Redistributions of source code must retain the above copyright notice,
 //  	this list of conditions, and the following disclaimer.
-//
+//  
 //  2.	Redistributions in binary form must reproduce the above copyright notice,
 //  	this list of conditions, and the following disclaimer in the documentation
 //  	and/or other materials provided with the distribution.
-//
+//  
 //  3.	Neither the names of the copyright holders nor the names of their contributors
 //  	may be used to endorse or promote products derived from this software without
 //  	specific prior written permission.
-//
+//  
 //  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 //  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 //  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 //  THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//  SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+//  SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
 //  OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 //  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR
 //  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.THE LAWS OF THE NETHERLANDS
-//  SHALL BE EXCLUSIVELY APPLICABLE AND ANY DISPUTES SHALL BE FINALLY SETTLED UNDER THE RULES
-//  OF ARBITRATION OF THE INTERNATIONAL CHAMBER OF COMMERCE IN THE HAGUE BY ONE OR MORE
+//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.THE LAWS OF THE NETHERLANDS 
+//  SHALL BE EXCLUSIVELY APPLICABLE AND ANY DISPUTES SHALL BE FINALLY SETTLED UNDER THE RULES 
+//  OF ARBITRATION OF THE INTERNATIONAL CHAMBER OF COMMERCE IN THE HAGUE BY ONE OR MORE 
 //  ARBITRATORS APPOINTED IN ACCORDANCE WITH SAID RULES.
-//
+//  
 
 #include "xsens_threadpool.h"
 #ifndef _MSC_VER
@@ -79,7 +79,8 @@
 // Enable this if you want to disable multithreading
 //#define ADD_TASK_EXECUTE_NOW
 
-namespace xsens {
+namespace xsens
+{
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +95,7 @@ int processorCount()
 {
 #if defined(_WIN32)
 	SYSTEM_INFO sysinfo;
-	::GetSystemInfo( &sysinfo );
+	::GetSystemInfo(&sysinfo);
 	return (int) sysinfo.dwNumberOfProcessors;
 #else
 	return sysconf(_SC_NPROCESSORS_ONLN);
@@ -126,7 +127,8 @@ unsigned int ThreadPoolTask::needToWaitFor()
 
 /*! \brief A class that contains a task and some administrative stuff
 */
-class PooledTask {
+class PooledTask
+{
 public:
 	ThreadPoolTask* m_task;		//!< The task that is to be executed
 	unsigned int m_id;			//!< The id that was assigned to the task by the ThreadPool
@@ -272,12 +274,12 @@ int32_t PooledThread::innerFunction(void)
 			}
 		}
 #ifdef XSENS_DEBUG
-		catch (std::exception &e)
+		catch (std::exception& e)
 		{
-			const std::type_info &et = typeid(e);
+			const std::type_info& et = typeid(e);
 #ifdef __GNUC__
 			int status;
-			char *realname = abi::__cxa_demangle(et.name(), 0, 0, &status);
+			char* realname = abi::__cxa_demangle(et.name(), 0, 0, &status);
 			fprintf(stderr, "ThreadPool: Caught an unhandled %s(\"%s\")\n", realname, e.what());
 			free(realname);
 #else
@@ -286,7 +288,7 @@ int32_t PooledThread::innerFunction(void)
 			complete = true;
 		}
 #endif
-		catch(...)
+		catch (...)
 		{
 #ifdef XSENS_DEBUG
 			fprintf(stderr, "ThreadPool: Caught an unhandled unknown exception\n");
@@ -382,7 +384,7 @@ ThreadPool::~ThreadPool()
 		for (ThreadSet::iterator it = m_threads.begin(); it != m_threads.end(); ++it)
 			delete *it;
 	}
-	catch(...)
+	catch (...)
 	{
 		// nothing much we can do about this...
 	}
@@ -434,7 +436,7 @@ ThreadPool::TaskId ThreadPool::addTask(ThreadPoolTask* task, ThreadPool::TaskId 
 unsigned int ThreadPool::count()
 {
 	Lock safety(&m_safe);
-	return (unsigned int) (m_tasks.size() + m_delaying.size() + m_executing.size());
+	return (unsigned int)(m_tasks.size() + m_delaying.size() + m_executing.size());
 }
 
 /*! \brief Set the number of threads in the ThreadPool
@@ -532,7 +534,7 @@ bool ThreadPool::doesTaskExist(ThreadPool::TaskId id)
 
 /*! \brief Remove the task with the supplied \a id if it exists, waits for the task to be finished
 */
-void ThreadPool::cancelTask(ThreadPool::TaskId id, bool wait)
+void ThreadPool::cancelTask(ThreadPool::TaskId id, bool wait) noexcept
 {
 	Lock safety(&m_safe);
 	TaskSet::iterator it = m_executing.find(id);
@@ -707,12 +709,20 @@ ThreadPool* gPool = NULL;
 bool gManagePool = true;
 
 /*! \brief Return the global thread pool object, it will be created if it did not yet exist */
-ThreadPool* ThreadPool::instance()
+ThreadPool* ThreadPool::instance() noexcept
 {
 	if (gPool)
 		return gPool;
-	gPool = new ThreadPool;
-	gManagePool = true;
+	try
+	{
+		gPool = new ThreadPool;
+		gManagePool = true;
+	}
+	catch (...)
+	{
+		gPool = nullptr;
+		gManagePool = false;
+	}
 	return gPool;
 }
 

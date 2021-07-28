@@ -48,7 +48,7 @@ void XdaProcess::Run(int argc, char* argv[])
         auto now = std::chrono::high_resolution_clock::now();
         m_device_interface->spinFor(std::chrono::milliseconds(100));
         
-        std::this_thread::sleep_until(now + std::chrono::milliseconds(100));
+        std::this_thread::sleep_until(now + std::chrono::milliseconds(20));
     }
 
     m_device_interface.reset();

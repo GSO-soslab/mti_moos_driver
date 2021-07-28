@@ -38,3 +38,10 @@ target_link_libraries(
 add_custom_command(TARGET xsens_mti_node
     PRE_BUILD COMMAND +make -C ${CMAKE_CURRENT_SOURCE_DIR}/lib/xspublic
 )
+
+add_custom_command(
+	TARGET xsens_mti_node
+	COMMAND ${CMAKE_COMMAND} -E copy
+	${CMAKE_CURRENT_SOURCE_DIR}/launch/xsens.moos
+	${CMAKE_CURRENT_BINARY_DIR}/xsens.moos
+)

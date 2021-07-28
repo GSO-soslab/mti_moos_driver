@@ -17,5 +17,4 @@ public:
     void Stop();
 };
 
-
 #endif //XSENS_MTI_DRIVER_XDAPROCESS_H

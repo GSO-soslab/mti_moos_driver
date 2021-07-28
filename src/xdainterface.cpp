@@ -22,7 +22,7 @@ void XdaInterface::Init(const char * MissionFile)
     
     m_th = std::thread(
             [this, MissionFile] {
-                Run("xsens_imu_driver", MissionFile);
+                Run("xsense_mti_moos_driver", MissionFile);
             }
     );
 }
@@ -50,6 +50,8 @@ void XdaInterface::spinFor(std::chrono::milliseconds timeout)
 
 void XdaInterface::registerPublishers()
 {
+
+    
     registerCallback(new ImuPublisher());
     registerCallback(new TemperaturePublisher());
     registerCallback(new MagneticFieldPublisher());
@@ -149,8 +151,21 @@ bool XdaInterface::prepare()
 	if (!m_device->readEmtsAndDeviceConfiguration()) {
         return handleError("Could not read device configuration");
     }
-
-	if (!m_device->gotoMeasurement()) {
+	
+    XsOutputConfigurationArray configArray;
+	
+    configArray.push_back(XsOutputConfiguration(XDI_PacketCounter, 0));
+    configArray.push_back(XsOutputConfiguration(XDI_SampleTimeFine, 0));
+    configArray.push_back(XsOutputConfiguration(XDI_Quaternion, 50));
+    configArray.push_back(XsOutputConfiguration(XDI_Acceleration, 20));
+    configArray.push_back(XsOutputConfiguration(XDI_RateOfTurn, 20));
+    configArray.push_back(XsOutputConfiguration(XDI_MagneticField, 20));
+    configArray.push_back(XsOutputConfiguration(XDI_Temperature, 5));
+    configArray.push_back(XsOutputConfiguration(XDI_EulerAngles, 50));
+    
+    m_device->setOutputConfiguration(configArray);
+	
+    if (!m_device->gotoMeasurement()) {
         return handleError("Could not put device into measurement mode");
     }
 
@@ -248,7 +263,7 @@ bool XdaInterface::Iterate()
 bool XdaInterface::OnStartUp()
 {
     appTick = 10;
-    commsTick = 1000;
+    commsTick = 100;
     
     if(!m_MissionReader.GetConfigurationParam("AppTick",appTick))
     {
