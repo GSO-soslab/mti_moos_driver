@@ -1,0 +1,27 @@
+ServerHost = localhost
+ServerPort = 9000
+
+Community    = alpha 
+MOOSTimeWarp = 1
+
+Processconfig = ANTLER
+{
+  MSBetweenLaunches = 100
+
+  // Run = MOOSDB           @ NewConsole = false
+  Run = xsens_mti_node      @ NewConsole = false
+  Run = uMS                 @ NewConsole = false
+}
+
+
+ProcessConfig = xsens_mti_node 
+{
+  AppTick    = 500
+  CommsTick  = 500
+}
+
+ProcessConfig = uMS
+{
+  AppTick    = 4
+  CommsTick  = 4
+}

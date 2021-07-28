@@ -1,0 +1,8 @@
+*.a
+*.d
+*.dpp
+*.o
+
+.build
+.idea
+.cmake-debug-build
