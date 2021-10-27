@@ -5,32 +5,48 @@
 #include <xscontroller/xscontrol_def.h>
 #include <xscontroller/xsdevice_def.h>
 #include <thread>
+#include <cstdlib>
+#include <cstdio>
+#include <climits>
+
 
 #include "messagepublishers/all_publishers.h"
 
 XdaInterface::XdaInterface()
 	: m_device(nullptr)
 {
-	MOOSTrace("Creating XsControl object...");
+	MOOSTrace("Creating XsControl object...\n");
 	m_control = XsControl::construct();
 	assert(m_control != 0);
 }
 
 void XdaInterface::Init(const char * MissionFile)
 {
-    MOOSTrace("Creating XsControl object...");
-    
-    m_th = std::thread(
-            [this, MissionFile] {
-                Run("xsense_mti_moos_driver", MissionFile);
-            }
-    );
+    MOOSTrace("Creating XsControl object...\n");
+    Run("xsens_mti_node", MissionFile);
 }
 
+void XdaInterface::Init(int argc, char* argv[])
+{
+    MOOSTrace("Creating XsControl object...\n");
+    Run("xsens_mti_node", argc, argv);
+
+}
+
+void XdaInterface::Init(const char* MissionFile, int argc, char* argv[])
+{
+    MOOSTrace("Creating XsControl object...\n");
+
+    char path[BUFSIZ];
+    realpath(MissionFile, path);
+
+    Run("xsens_mti_node", path, argc, argv);
+
+}
 
 XdaInterface::~XdaInterface()
 {
-	MOOSTrace("Cleaning up ...");
+	MOOSTrace("Cleaning up ...\n");
 	close();
 	m_control->destruct();
 }
@@ -50,8 +66,6 @@ void XdaInterface::spinFor(std::chrono::milliseconds timeout)
 
 void XdaInterface::registerPublishers()
 {
-
-    
     registerCallback(new ImuPublisher());
     registerCallback(new TemperaturePublisher());
     registerCallback(new MagneticFieldPublisher());
@@ -59,33 +73,38 @@ void XdaInterface::registerPublishers()
 }
 
 bool XdaInterface::connectDevice() {
-    
+
+    XsBaudRate baudrate = XBR_Invalid;
+
     // Read baudrate parameter if set
     int baudrateParam = 115200;
-    m_MissionReader.GetConfigurationParam("baudrate", baudrateParam);
-    XsBaudRate baudrate = XsBaud::numericToRate(baudrateParam);
-   
+    if(m_MissionReader.GetConfigurationParam("Baudrate", baudrateParam)) {
+         baudrate = XsBaud::numericToRate(baudrateParam);
+     }
+
     // Read device ID parameter
     bool checkDeviceID = false;
     std::string deviceId;
-    if(m_MissionReader.GetConfigurationParam("device_id", deviceId))
+    if(m_MissionReader.GetConfigurationParam("DeviceId", deviceId))
     {
         checkDeviceID = true;
+        MOOSTrace("Device id is set to %s\n", deviceId.c_str());
     }
-    
-    
+
     // Read port parameter if set
     XsPortInfo mtPort;
     std::string portName;
-    if(m_MissionReader.GetConfigurationParam("port", portName))
+    if(m_MissionReader.GetConfigurationParam("Port", portName))
     {
+        MOOSTrace("Port is set to %s\n", portName.c_str());
+        MOOSTrace("Baudrate is set to %d\n", baudrateParam);
+
         mtPort = XsPortInfo(portName, baudrate);
-        
-        if(!XsScanner::scanPort(mtPort, baudrate))
+
+        if(!XsScanner::scanPort(mtPort, baudrate ))
         {
             return handleError("No MTi device found. Verify port and baudrate.");
         }
-        
         if(checkDeviceID && mtPort.deviceId().toString().c_str() != deviceId)
         {
             return handleError("No MTi device found with matching device ID.");
@@ -93,7 +112,7 @@ bool XdaInterface::connectDevice() {
     }
     else
     {
-        MOOSTrace("Scanning for devices...");
+        MOOSTrace("Scanning for devices...\n");
         XsPortInfoArray portInfoArray = XsScanner::scanPorts(baudrate);
     
         for (auto const &portInfo : portInfoArray)
@@ -170,17 +189,17 @@ bool XdaInterface::prepare()
     }
 
 	std::string logFile;
-	if(m_MissionReader.GetConfigurationParam("log_file", logFile))
+	if(m_MissionReader.GetConfigurationParam("LogFile", logFile))
 	{
 		if (m_device->createLogFile(logFile) != XRV_OK) {
             return handleError("Failed to create a log file! (" + logFile + ")");
         }
 		else
 		{
-            MOOSTrace("Created a log file: %s", logFile.c_str());
+            MOOSTrace("Created a log file: %s\n", logFile.c_str());
         }
 
-		MOOSTrace("Recording to %s ...", logFile.c_str());
+		MOOSTrace("Recording to %s ...\n", logFile.c_str());
 		if (!m_device->startRecording()) {
             return handleError("Could not start recording");
         }
@@ -207,14 +226,14 @@ void XdaInterface::registerCallback(PacketCallback *cb)
 
 bool XdaInterface::handleError(std::string error)
 {
-	// ROS_ERROR("%s", error.c_str());
-	close();
+    MOOSTrace(error + "\n");
+    close();
 	return false;
 }
 
 ///////////////////// MOOS ///////////////////////////////
 
-bool XdaInterface::OnNewMail (MOOSMSG_LIST &NewMail)
+bool XdaInterface::OnNewMail(MOOSMSG_LIST &NewMail)
 {
     MOOSMSG_LIST::iterator p;
     for( p = NewMail.begin() ; p != NewMail.end() ; p++ )
@@ -243,6 +262,9 @@ bool XdaInterface::OnNewMail (MOOSMSG_LIST &NewMail)
 */
 bool XdaInterface::OnConnectToServer()
 {
+
+    // register publishers
+    registerPublishers();
     return true;
 }
 
@@ -252,6 +274,7 @@ bool XdaInterface::OnConnectToServer()
 */
 bool XdaInterface::Iterate()
 {
+    spinFor(std::chrono::milliseconds(100));
     return true;
 }
 
@@ -264,7 +287,7 @@ bool XdaInterface::OnStartUp()
 {
     appTick = 10;
     commsTick = 100;
-    
+
     if(!m_MissionReader.GetConfigurationParam("AppTick",appTick))
     {
         MOOSTrace("Warning, AppTick not set.\n");
@@ -277,7 +300,20 @@ bool XdaInterface::OnStartUp()
     
     SetAppFreq(appTick);
     SetCommsFreq(commsTick);
-    
+
+    // connect to devices
+    if (!connectDevice())
+    {
+        return handleError("can not connect to device");
+    }
+
+    // prepare the device for reading
+    if (!prepare()) {
+        return handleError("can not prepare device");
+    }
+
+    calibrate();
+
     return true;
 }
 

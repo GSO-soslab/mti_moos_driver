@@ -63,7 +63,11 @@ public:
 	void calibrate();
 	
     void Init(const char * MissionFile);
-    
+
+    void Init(int argc, char* argv[]);
+
+    void Init(const char* MissonFile, int argc, char* argv[]);
+
 private:
 	void registerCallback(PacketCallback *cb);
 	bool handleError(std::string error);

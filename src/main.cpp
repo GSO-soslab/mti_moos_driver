@@ -45,26 +45,11 @@ using std::chrono::milliseconds;
 
 Journaller *gJournal = 0;
 
-bool running = true;
-
-XdaProcess* glob_proc;
-
-void signal_handler(int signum)
-{
-    glob_proc->Stop();
-}
-
 int main(int argc, char *argv[])
 {
-    
-    signal(SIGINT, signal_handler);
-	
-	
-    XdaProcess process;
-    glob_proc = &process;
-    process.Run(argc, argv);
-    
 
+    XdaProcess process;
+    process.Run(argc, argv);
 
 	return 0;
 }

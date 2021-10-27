@@ -8,19 +8,11 @@ Processconfig = ANTLER
 {
   MSBetweenLaunches = 100
 
-  Run = MOOSDB              @ NewConsole = false
-  Run = ./xsens_mti_node    @ NewConsole = false
-  Run = uMS                 @ NewConsole = false
+  Run = xsens_mti_node @ NewConsole = false, path=.
 }
 
 ProcessConfig = xsens_mti_node 
 {
   AppTick    = 1
   CommsTick  = 100
-}
-
-ProcessConfig = uMS
-{
-  AppTick    = 4
-  CommsTick  = 4
 }

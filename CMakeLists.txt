@@ -17,7 +17,12 @@ link_directories(${MOOS_LIBRARY_DIRS})
 include_directories(${MOOS_INCLUDE_DIRS})
 link_directories(${MOOS_LIBRARY_DIRS})
 
-link_directories(lib/xspublic/xscontroller lib/xspublic/xscommon lib/xspublic/xstypes)
+link_directories(
+	lib/xspublic/xscontroller
+	lib/xspublic/xscommon
+	lib/xspublic/xstypes
+)
+
 add_executable(
 	xsens_mti_node
 	src/main.cpp

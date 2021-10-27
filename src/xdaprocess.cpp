@@ -1,17 +1,18 @@
 #include <memory>
 #include <getopt.h>
+#include <cstring>
 #include "xdaprocess.h"
 
 XdaProcess::XdaProcess() = default;
 
 void XdaProcess::Run(int argc, char* argv[])
 {
-    char *missionFile;
+    char missionFile[BUFSIZ];
     for(int c = 0; c != -1 ; c = getopt(argc, argv, "m:") )
     {
         switch (c) {
             case 'm':
-                missionFile = optarg;
+                strcpy(missionFile, optarg);
                 break;
             case '?':
                 if (optopt == 'm') {
@@ -24,36 +25,34 @@ void XdaProcess::Run(int argc, char* argv[])
     m_device_interface = std::make_shared<XdaInterface>();
    
     // start moos
-    m_device_interface->Init(missionFile);
-   
-    // register publishers
-    m_device_interface->registerPublishers();
-   
-    // connect to devices
-    if (!m_device_interface->connectDevice())
-    {
-        throw CMOOSException("can not connect to device");
-    }
-   
-    // prepare the device for reading
-    if (!m_device_interface->prepare()) {
-        throw CMOOSException("can not prepare device");
-    }
-  
-    m_device_interface->calibrate();
-    
-    // run it
-    while (running)
-    {
-        auto now = std::chrono::high_resolution_clock::now();
-        m_device_interface->spinFor(std::chrono::milliseconds(100));
-        
-        std::this_thread::sleep_until(now + std::chrono::milliseconds(20));
+    if(strlen(missionFile) != 0) {
+        MOOSTrace("Mission file: %s\n", missionFile);
+        m_device_interface->Init(missionFile);
+    } else {
+        MOOSTrace("Args: ");
+        for(int i = 0 ; i < argc - 1; i++) {
+            MOOSTrace("%s, ", argv[i]);
+        }   MOOSTrace("%s\n", argv[argc - 1]);
+
+        for(int i = 0 ; i < argc; i++) {
+            auto ends_with = [](std::string const &fullString, std::string const &ending) -> bool {
+                if (fullString.length() >= ending.length()) {
+                    return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+                } else {
+                    return false;
+                }
+            };
+
+            if(ends_with(std::string(argv[i]), ".moos") || ends_with(std::string(argv[i]),".moos++")) {
+                strcpy(missionFile, argv[i]);
+                MOOSTrace("Mission file found: %s\n", missionFile);
+                m_device_interface->Init(missionFile, argc, argv);
+            }
+        }
+
     }
 
-    m_device_interface.reset();
-}
-
-void XdaProcess::Stop() {
-    running = false;
+    if(strlen(missionFile) == 0) {
+        m_device_interface->Init(argc, argv);
+    }
 }
